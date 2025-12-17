@@ -3,6 +3,7 @@ import cors from "cors"
 import { response } from "./utils/response.js"
 import PaymentRoute from "./routes/payment.route.js"
 import AuthRoute from "./routes/auth.route.js"
+import CategoryRoute from "./routes/category.route.js"
 
 // initialization
 const app = express()
@@ -22,6 +23,7 @@ app.use(cors({
 app.get("/", (req: Request, res: Response) => response({ res, message: "Welcome Bro" }))
 app.use(PaymentRoute)
 app.use("/auth", AuthRoute)
+app.use("/category", CategoryRoute)
 
 // listening for dev
 app.listen(5051, () => console.log("Server up and running"))
