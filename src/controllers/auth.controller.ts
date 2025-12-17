@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { response } from "../utils/response.js";
-import { RegisterPayload, registerValidate } from "../validations/auth.validation.js";
-import { countUserWithEmailService, countUserWithPhoneService, registerService } from "../services/auth.service.js";
-import { hashedPassword } from "../utils/bcrypt.js";
+import { LoginPayload, loginValidate, RegisterPayload, registerValidate } from "../validations/auth.validation.js";
+import { countUserWithEmailService, countUserWithPhoneService, getUserByEmailService, registerService } from "../services/auth.service.js";
+import { comparePassword, hashedPassword } from "../utils/bcrypt.js";
+import { generateToken } from "../utils/jwt.js";
+import "dotenv/config";
 
 export const register = async (req: Request, res: Response) => {
   const body = req.body as RegisterPayload;
@@ -27,6 +29,34 @@ export const register = async (req: Request, res: Response) => {
     }
 
     response({ res, status: 201, message: "User registered successfully", data: { ...result, password: null } });
+  } catch (errors: unknown) {
+    response({ res, status: 500, message: "Internal Server Error", errors });
+  }
+}
+
+export const login = async (req: Request, res: Response) => {
+  const body = req.body as LoginPayload;
+  const { error, success, data } = loginValidate.safeParse(body);
+
+  if (!success) {
+    const errors = error.issues.map((issue) => ({ field: issue.path.join("_"), message: issue.message }));
+    return response({ res, status: 400, message: "Invalid request", errors });
+  }
+
+  try {
+    const user = await getUserByEmailService(data.email);
+    if (!user) {
+      return response({ res, status: 400, message: "Email or password is incorrect" });
+    }
+
+    const isPasswordValid = await comparePassword(data.password, user.password as string);
+    if (!isPasswordValid) {
+      return response({ res, status: 401, message: "Email or password is incorrect" });
+    }
+
+    const token = generateToken({ id: user.id, name: user.name, role: user.role });
+    user.password = null;
+    response({ res, status: 200, message: "Login successfully", data: { token, user } });
   } catch (errors: unknown) {
     response({ res, status: 500, message: "Internal Server Error", errors });
   }

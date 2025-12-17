@@ -27,3 +27,19 @@ export const countUserWithPhoneService = (phone: string) => {
     }
   })
 }
+
+export const getUserByEmailService = async (email: string) => {
+  return await prisma.user.findUnique({
+    where: {
+      email
+    }
+  })
+}
+
+export const getUserByPhoneService = async (phone: string) => {
+  return await prisma.user.findUnique({
+    where: {
+      phone
+    }
+  })
+}
