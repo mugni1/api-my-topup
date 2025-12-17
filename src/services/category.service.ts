@@ -6,6 +6,15 @@ export const createCategoryService = async (payload: { name: string }) => {
   })
 };
 
+export const updateCategoryService = async (id: string, payload: { name: string }) => {
+  return await prisma.category.update({
+    where: {
+      id
+    },
+    data: payload
+  })
+};
+
 export const countCategoryByNameService = async (name: string) => {
   return await prisma.category.count({
     where: {
@@ -13,3 +22,20 @@ export const countCategoryByNameService = async (name: string) => {
     }
   });
 };
+
+export const countCategoryByIdService = async (id: string) => {
+  return await prisma.category.count({
+    where: {
+      id
+    }
+  });
+};
+
+
+export const getCategoryByNameService = async (name: string) => {
+  return await prisma.category.findUnique({
+    where: {
+      name
+    }
+  });
+}
