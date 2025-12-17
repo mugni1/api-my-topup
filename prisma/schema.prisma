@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum Role {
+  super_user
+  user
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String        @db.VarChar(50)
+  email        String        @unique @db.VarChar(100)
+  phone        String        @unique @db.VarChar(13)
+  password     String?       @db.Text
+  bio          String?       @db.Text
+  provider     String?       @db.VarChar(20)
+  gender       Gender?
+  role         Role          @default(user)
+  orderDetails OrderDetail[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(50)
+  items     Item[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Item {
+  id           String      @id @default(cuid())
+  name         String      @db.VarChar(50)
+  merchantName String      @db.VarChar(50)
+  imageUrl     String      @db.Text
+  price        Int         @db.Integer
+  quantity     Int         @db.Integer
+  categoryId   String
+  category     Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  pending
+  paid
+  expired
+  failed
+}
+
+model OrderDetail {
+  id          String      @id @default(cuid())
+  trxId       String      @unique
+  status      OrderStatus @default(pending)
+  grossAmount Int         @db.Integer
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model OrderItem {
+  id            String      @id @default(cuid())
+  totalPrice    Int         @db.Integer
+  totalQuantity Int         @db.Integer
+  itemId        String
+  item          Item        @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderDetailId String
+  orderDetail   OrderDetail @relation(fields: [orderDetailId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
