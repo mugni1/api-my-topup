@@ -40,7 +40,8 @@ model User {
 
 model Category {
   id        String   @id @default(cuid())
-  name      String   @unique @db.VarChar(50)
+  name      String   @db.VarChar(50)
+  code      String   @unique @db.VarChar(50)
   items     Item[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
