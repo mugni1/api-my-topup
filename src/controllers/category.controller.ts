@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { countCategoryByIdService, countCategoryByNameService, createCategoryService, updateCategoryService } from "../services/category.service.js";
+import { countCategoryByIdService, countCategoryByNameService, createCategoryService, deleteCategoryService, updateCategoryService } from "../services/category.service.js";
 import { response } from "../utils/response.js";
 import { createUpdateCategoryValidation } from "../validations/category.validation.js";
 
@@ -30,7 +30,6 @@ export const createCategory = async (req: Request, res: Response) => {
     return response({ res, status: 500, message: "Internal server error", errors });
   }
 };
-
 
 export const updateCategory = async (req: Request, res: Response) => {
   try {
@@ -67,3 +66,22 @@ export const updateCategory = async (req: Request, res: Response) => {
   }
 };
 
+export const deleteCategory = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+
+    const isExistId = await countCategoryByIdService(id);
+    if (!isExistId) {
+      return response({ res, status: 404, message: "Category not found" });
+    }
+
+    const category = await deleteCategoryService(id);
+    if (!category) {
+      return response({ res, status: 500, message: "Failed to delete category" });
+    }
+
+    return response({ res, status: 200, message: "Category deleted successfully", data: category });
+  } catch (errors: unknown) {
+    return response({ res, status: 500, message: "Internal server error", errors });
+  }
+};

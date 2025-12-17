@@ -15,6 +15,14 @@ export const updateCategoryService = async (id: string, payload: { name: string 
   })
 };
 
+export const deleteCategoryService = async (id: string) => {
+  return await prisma.category.delete({
+    where: {
+      id
+    }
+  })
+};
+
 export const countCategoryByNameService = async (name: string) => {
   return await prisma.category.count({
     where: {
