@@ -1,5 +1,6 @@
 import { prisma } from "../libs/prisma.js";
 import { QueryParams } from "../types/param.type.js";
+import { CreateUpdateCategoryPayload } from "../validations/category.validation.js";
 
 
 export const getCategoryService = async (query: QueryParams) => {
@@ -26,13 +27,13 @@ export const countCategoryService = async (query: { search: string }) => {
   });
 };
 
-export const createCategoryService = async (payload: { name: string }) => {
+export const createCategoryService = async (payload: CreateUpdateCategoryPayload) => {
   return await prisma.category.create({
     data: payload
   })
 };
 
-export const updateCategoryService = async (id: string, payload: { name: string }) => {
+export const updateCategoryService = async (id: string, payload: CreateUpdateCategoryPayload) => {
   return await prisma.category.update({
     where: {
       id
@@ -49,10 +50,10 @@ export const deleteCategoryService = async (id: string) => {
   })
 };
 
-export const countCategoryByNameService = async (name: string) => {
+export const countCategoryByCodeService = async (code: string) => {
   return await prisma.category.count({
     where: {
-      name
+      code
     }
   });
 };
@@ -66,10 +67,10 @@ export const countCategoryByIdService = async (id: string) => {
 };
 
 
-export const getCategoryByNameService = async (name: string) => {
+export const getCategoryByCodeService = async (code: string) => {
   return await prisma.category.findUnique({
     where: {
-      name
+      code
     }
   });
 }

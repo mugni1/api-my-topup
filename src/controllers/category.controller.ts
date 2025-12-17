@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { countCategoryByIdService, countCategoryByNameService, countCategoryService, createCategoryService, deleteCategoryService, getCategoryService, updateCategoryService } from "../services/category.service.js";
+import { countCategoryByIdService, countCategoryByCodeService, countCategoryService, createCategoryService, deleteCategoryService, getCategoryService, updateCategoryService } from "../services/category.service.js";
 import { response } from "../utils/response.js";
 import { createUpdateCategoryValidation } from "../validations/category.validation.js";
 import { Meta } from "../types/meta.type.js";
@@ -36,7 +36,7 @@ export const createCategory = async (req: Request, res: Response) => {
       return response({ res, status: 400, message: "Invalid input", errors });
     }
 
-    const isExist = await countCategoryByNameService(data.name);
+    const isExist = await countCategoryByCodeService(data.code);
     if (isExist) {
       return response({ res, status: 400, message: "Category already exists" });
     }
@@ -66,8 +66,8 @@ export const updateCategory = async (req: Request, res: Response) => {
       return response({ res, status: 400, message: "Invalid input", errors });
     }
 
-    const isExistName = await countCategoryByNameService(data.name);
-    if (isExistName) {
+    const isExist = await countCategoryByCodeService(data.code);
+    if (isExist) {
       return response({ res, status: 400, message: "Category already exists" });
     }
 
