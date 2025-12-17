@@ -7,7 +7,6 @@ export const createItemService = async (payload: CreateUpdateItemPayload) => {
       name: payload.name,
       imageUrl: payload.image_url,
       price: payload.price,
-      quantity: payload.quantity,
       categoryId: payload.category_id,
       merchantName: payload.merchant_name
     }

@@ -5,7 +5,6 @@ export const createUpdateItemValidation = z.object({
   merchant_name: z.string("merchant_name is required").min(2, "merchant_name must be at least 2 characters").max(50, "merchant_name must be at most 50 characters"),
   image_url: z.url("image_url must be a valid URL"),
   price: z.number("price must be a number").min(0, "price must be at least 0"),
-  quantity: z.number("quantity must be a number").min(1, "quantity must be at least 1"),
   category_id: z.cuid("category_id must be a valid CUID")
 })
 
