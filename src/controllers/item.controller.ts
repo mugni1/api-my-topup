@@ -1,8 +1,24 @@
 import { Request, Response } from "express";
 import { response } from "../utils/response.js";
 import { createUpdateItemValidation } from "../validations/item.validation.js";
-import { countItemByIdService, createItemService, deleteItemService, updateItemSerevice } from "../services/item.service.js";
+import { countItemByIdService, createItemService, deleteItemService, getItemsService, updateItemSerevice } from "../services/item.service.js";
 import { countCategoryByIdService } from "../services/category.service.js";
+import { Meta } from "../types/meta.type.js";
+
+export const getItems = async (req: Request, res: Response) => {
+  const search = req.query.search?.toString() || "";
+  const limit = Number(req.query.limit) || 10;
+  const page = Number(req.query.page) || 1;
+  const offset = Number((page - 1) * limit);
+  const meta: Meta = { limit, offset, page, search, total: 0 }
+
+  try {
+    const data = await getItemsService(meta)
+    response({ res, status: 200, message: "Get items successfully", data, meta })
+  } catch (errors) {
+    response({ res, status: 500, message: "Internal server error", errors })
+  }
+}
 
 export const createItem = async (req: Request, res: Response) => {
   const body = req.body

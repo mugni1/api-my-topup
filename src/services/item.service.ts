@@ -1,5 +1,19 @@
 import { prisma } from "../libs/prisma.js";
+import { QueryParams } from "../types/param.type.js";
 import { CreateUpdateItemPayload } from "../validations/item.validation.js";
+
+export const getItemsService = async (query: QueryParams) => {
+  return await prisma.item.findMany({
+    where: {
+      OR: [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { merchantName: { contains: query.search, mode: 'insensitive' } },
+      ]
+    },
+    skip: query.offset,
+    take: query.limit
+  });
+};
 
 export const createItemService = async (payload: CreateUpdateItemPayload) => {
   return await prisma.item.create({
