@@ -55,7 +55,7 @@ export const updateItem = async (req: Request, res: Response) => {
       return response({ res, message: "Item updation failed", status: 500 })
     }
 
-    response({ res, message: "Item updated successfully", status: 201, data: item })
+    response({ res, message: "Item updated successfully", status: 200, data: item })
   } catch (error) {
     response({ res, message: "Internal server error", status: 500 })
   }
