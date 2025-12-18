@@ -65,15 +65,16 @@ export const updateItem = async (req: Request, res: Response) => {
   }
 
   try {
-    if (image) {
-      const uploadedImage = await imageValidateAndUpload(image, res)
-      imageUrl = uploadedImage.secure_url
-      publicId = uploadedImage.public_id
+    const isExistItem = await getItemByIdService(id)
+    if (!isExistItem) {
+      return response({ res, message: "Item not found", status: 404 })
     }
 
-    const isExistItem = await countItemByIdService(id)
-    if (isExistItem < 1) {
-      return response({ res, message: "Item not found", status: 404 })
+    if (image) {
+      const uploadedImage = await imageValidateAndUpload(image, res)
+      await cloudinary.uploader.destroy(isExistItem.imageId)
+      imageUrl = uploadedImage.secure_url
+      publicId = uploadedImage.public_id
     }
 
     const isExistCategory = await countCategoryByIdService(data.category_id)
