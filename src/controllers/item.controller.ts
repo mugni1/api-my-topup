@@ -5,8 +5,7 @@ import { countItemByIdService, createItemService, deleteItemService, getItemsSer
 import { countCategoryByIdService } from "../services/category.service.js";
 import { Meta } from "../types/meta.type.js";
 import fileUpload from "express-fileupload";
-import cloudinary from "../libs/cloudinary.js";
-import { imageValidation } from "../utils/image.js";
+import { imageValidateAndUpload } from "../utils/image.js";
 
 export const getItems = async (req: Request, res: Response) => {
   const search = req.query.search?.toString() || "";
@@ -24,7 +23,6 @@ export const getItems = async (req: Request, res: Response) => {
 }
 
 export const createItem = async (req: Request, res: Response) => {
-  const image = imageValidation(req.files?.image as fileUpload.UploadedFile, res)
   const { data, success, error } = createUpdateItemValidation.safeParse(req.body)
   if (!success) {
     const errors = error.issues.map(issue => ({ path: issue.path.join('.'), message: issue.message }))
@@ -32,26 +30,14 @@ export const createItem = async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await new Promise<any>((resolve) => {
-      cloudinary.uploader.upload_stream(
-        { folder: "item/images" },
-        (error: any, result: any) => {
-          if (error) {
-            return response({ res, status: 500, message: "Failed upload image" })
-          }
-          else {
-            return resolve(result)
-          }
-        }
-      ).end(image)
-    })
+    const image = await imageValidateAndUpload(req.files?.image as fileUpload.UploadedFile, res)
 
     const isExistCategory = await countCategoryByIdService(data.category_id)
     if (isExistCategory < 1) {
       return response({ res, message: "Category not found", status: 404 })
     }
 
-    const item = await createItemService(data, result.secure_url, result.public_id)
+    const item = await createItemService(data, image.secure_url, image.public_id)
     if (!item) {
       return response({ res, message: "Item creation failed", status: 500 })
     }
@@ -64,15 +50,26 @@ export const createItem = async (req: Request, res: Response) => {
 
 export const updateItem = async (req: Request, res: Response) => {
   const id = req.params.id
-  const body = req.body
 
-  const { data, success, error } = createUpdateItemValidation.safeParse(body)
+  // image 
+  let image = req.files?.image as fileUpload.UploadedFile
+  let imageUrl: string | undefined
+  let publicId: string | undefined
+
+  // body
+  const { data, success, error } = createUpdateItemValidation.safeParse(req.body)
   if (!success) {
     const errors = error.issues.map(issue => ({ path: issue.path.join('.'), message: issue.message }))
     return response({ res, message: "Invalid input", errors, status: 400 })
   }
 
   try {
+    if (image) {
+      const uploadedImage = await imageValidateAndUpload(image, res)
+      imageUrl = uploadedImage.secure_url
+      publicId = uploadedImage.public_id
+    }
+
     const isExistItem = await countItemByIdService(id)
     if (isExistItem < 1) {
       return response({ res, message: "Item not found", status: 404 })
@@ -83,12 +80,12 @@ export const updateItem = async (req: Request, res: Response) => {
       return response({ res, message: "Category not found", status: 404 })
     }
 
-    const item = await updateItemSerevice(id, data)
-    if (!item) {
+    const updated = await updateItemSerevice(id, data, imageUrl, publicId)
+    if (!updated) {
       return response({ res, message: "Item updation failed", status: 500 })
     }
 
-    response({ res, message: "Item updated successfully", status: 200, data: item })
+    response({ res, message: "Item updated successfully", status: 200, data: updated })
   } catch (error) {
     response({ res, message: "Internal server error", status: 500 })
   }
