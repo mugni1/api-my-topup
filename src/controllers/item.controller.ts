@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { response } from "../utils/response.js";
 import { createUpdateItemValidation } from "../validations/item.validation.js";
-import { countItemByIdService, createItemService, updateItemSerevice } from "../services/item.service.js";
+import { countItemByIdService, createItemService, deleteItemService, updateItemSerevice } from "../services/item.service.js";
 import { countCategoryByIdService } from "../services/category.service.js";
 
 export const createItem = async (req: Request, res: Response) => {
@@ -56,6 +56,26 @@ export const updateItem = async (req: Request, res: Response) => {
     }
 
     response({ res, message: "Item updated successfully", status: 200, data: item })
+  } catch (error) {
+    response({ res, message: "Internal server error", status: 500 })
+  }
+}
+
+export const deleteItem = async (req: Request, res: Response) => {
+  const id = req.params.id
+
+  try {
+    const isExistItem = await countItemByIdService(id)
+    if (isExistItem < 1) {
+      return response({ res, message: "Item not found", status: 404 })
+    }
+
+    const deleted = await deleteItemService(id)
+    if (!deleted) {
+      return response({ res, message: "Item deleting failed", status: 500 })
+    }
+
+    response({ res, message: "Item deleted successfully", status: 200, data: deleted })
   } catch (error) {
     response({ res, message: "Internal server error", status: 500 })
   }

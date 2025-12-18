@@ -35,3 +35,11 @@ export const countItemByIdService = async (id: string) => {
     }
   })
 }
+
+export const deleteItemService = async (id: string) => {
+  return await prisma.item.delete({
+    where: {
+      id
+    }
+  })
+}
