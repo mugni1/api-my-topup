@@ -75,6 +75,7 @@ model OrderDetail {
   destination String      @db.VarChar(50)
   status      OrderStatus @default(pending)
   grossAmount Int         @db.Integer
+  paymentType String?
   userId      String
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   orderItems  OrderItem[]

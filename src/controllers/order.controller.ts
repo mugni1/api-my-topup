@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import { response } from "../utils/response.js";
 import { createOrderValidation } from "../validations/order.validation.js";
 import midtransSnap from "../libs/midtrans.js";
-import { createOrderDetailService, createOrderItem } from "../services/order.service.js";
+import { createOrderDetailService, createOrderItem, getOrderDetailByTrxId, updateOrderDetailByTrxId } from "../services/order.service.js";
+import crypto from "crypto";
+import "dotenv/config";
 
 export const createOrder = async (req: Request, res: Response) => {
   const userId = req.userId as string
@@ -44,7 +46,35 @@ export const createOrder = async (req: Request, res: Response) => {
   }
 }
 
-export const handleNotification = (req: Request, res: Response) => {
+export const handleNotification = async (req: Request, res: Response) => {
   const body = req.body;
-  response({ res, status: 200, message: "OK", data: body })
+
+  // check order detail
+  const transaction = await getOrderDetailByTrxId(body.order_id);
+  if (transaction) {
+    
+    // generate hadheh key
+    const hashed = crypto.createHash('sha512').update(`${transaction.trxId}${body.status_code}${body.gross_amount}${process.env.MIDTRANS_SERVER_KEY}`).digest('hex');
+
+    // check signature key
+    if (body.signature_key == hashed) {
+      let orderId = transaction.trxId;
+      let transactionStatus = body.transaction_status;
+      let fraudStatus = body.fraud_status;
+
+      if (transactionStatus == 'capture') {
+        if (fraudStatus == 'accept') {
+          await updateOrderDetailByTrxId(orderId, body.payment_type, 'paid')
+        }
+      } else if (transactionStatus == 'settlement') {
+        await updateOrderDetailByTrxId(orderId, body.payment_type, 'paid')
+      } else if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
+        await updateOrderDetailByTrxId(orderId, body.payment_type, 'failed')
+      } else if (transactionStatus == 'pending') {
+        await updateOrderDetailByTrxId(orderId, body.payment_type, 'pending')
+      }
+    }
+  }
+
+  response({ res, status: 200, message: "OK" })
 }
