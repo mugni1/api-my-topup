@@ -43,3 +43,8 @@ export const createOrder = async (req: Request, res: Response) => {
     response({ res, status: 500, message: "Internal server error" })
   }
 }
+
+export const handleNotification = (req: Request, res: Response) => {
+  const body = req.body;
+  response({ res, status: 200, message: "OK", data: body })
+}
