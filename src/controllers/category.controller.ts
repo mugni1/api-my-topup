@@ -5,7 +5,7 @@ import { createUpdateCategoryValidation } from "../validations/category.validati
 import { Meta } from "../types/meta.type.js";
 
 export const getCategory = async (req: Request, res: Response) => {
-  const search = req.query?.search as string;
+  const search = req.query?.search?.toString() || "";
   const limit = Number(req.query?.limit) || 10;
   const page = Number(req.query?.page) || 1;
   const offset = Number(limit * (page - 1));

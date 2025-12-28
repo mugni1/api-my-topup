@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { response } from "../utils/response.js";
 import { createUpdateItemValidation } from "../validations/item.validation.js";
-import { countItemByIdService, createItemService, deleteItemService, getItemByIdService, getItemsService, updateItemSerevice } from "../services/item.service.js";
+import { createItemService, deleteItemService, getItemByIdService, getItemsService, updateItemSerevice } from "../services/item.service.js";
 import { countCategoryByIdService } from "../services/category.service.js";
 import { Meta } from "../types/meta.type.js";
 import fileUpload from "express-fileupload";
