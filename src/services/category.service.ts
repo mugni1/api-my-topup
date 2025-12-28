@@ -22,10 +22,10 @@ export const getCategoryService = async (query: QueryParams) => {
 export const countCategoryService = async (query: { search: string }) => {
   return await prisma.category.count({
     where: {
-      name: {
-        contains: query.search,
-        mode: 'insensitive'
-      }
+      OR: [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { code: { contains: query.search, mode: 'insensitive' } }
+      ]
     }
   });
 };
