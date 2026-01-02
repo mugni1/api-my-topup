@@ -18,6 +18,17 @@ export const getItemsService = async (query: QueryParams) => {
   });
 };
 
+export const countItemByKeywordService = async (keyword: string) => {
+  return await prisma.item.count({
+    where: {
+      OR: [
+        { name: { contains: keyword, mode: 'insensitive' } },
+        { merchantName: { contains: keyword, mode: 'insensitive' } },
+      ]
+    }
+  })
+}
+
 export const createItemService = async (payload: CreateUpdateItemPayload, imageUrl: string, imageId: string) => {
   return await prisma.item.create({
     data: {
