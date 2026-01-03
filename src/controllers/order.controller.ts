@@ -2,16 +2,17 @@ import { Request, Response } from "express";
 import { response } from "../utils/response.js";
 import { createOrderValidation } from "../validations/order.validation.js";
 import midtransSnap from "../libs/midtrans.js";
-import { createOrderDetailService, createOrderItem, getOrderDetailByTrxId, updateOrderDetailByTrxId } from "../services/order.service.js";
+import { countOrderBySearchService, createOrderDetailService, createOrderItem, getOrderDetailByTrxId, getOrdersService, updateOrderDetailByTrxId } from "../services/order.service.js";
 import crypto from "crypto";
 import "dotenv/config";
+import { Meta } from "../types/meta.type.js";
 
 export const createOrder = async (req: Request, res: Response) => {
   const userId = req.userId as string
   const userName = req.userName as string
   const userPhone = req.userPhone as string
   const userEmail = req.userEmail as string
-  
+
   // validation body
   const { data, success, error } = createOrderValidation.safeParse(req.body)
   if (!success) {
@@ -97,4 +98,23 @@ export const handleNotification = async (req: Request, res: Response) => {
   }
 
   response({ res, status: 200, message: "OK" })
+}
+
+export const getOrders = async (req: Request, res: Response) => {
+  const search = req.query.search?.toString() || "";
+  const limit = Number(req.query.limit) || 10;
+  const page = Number(req.query.page) || 1;
+  const offset = Number((page - 1) * limit);
+  const orderBy = req.query.orderBy?.toString() || "createdAt";
+  const sortBy = req.query.sortBy?.toString() || "desc";
+  const meta: Meta = { limit, offset, page, search, orderBy, sortBy, total: 0 }
+
+  try {
+    const results = await getOrdersService(meta)
+    const total = await countOrderBySearchService(meta.search)
+    meta.total = total
+    response({ res, message: "Success get orders", status: 200, data: results, meta })
+  } catch {
+    response({ res, message: "Internal server error", status: 500 })
+  }
 }
