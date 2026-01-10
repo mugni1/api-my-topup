@@ -8,6 +8,7 @@ import CategoryRoute from "./routes/category.route.js"
 import ItemRoute from "./routes/item.route.js"
 import OrderRoute from "./routes/order.route.js"
 import GameRoute from "./routes/game.route.js"
+import UploadRoute from "./routes/upload.route.js"
 
 // initialization
 const app = express()
@@ -34,6 +35,7 @@ app.use("/category", CategoryRoute)
 app.use("/item", ItemRoute)
 app.use("/order", OrderRoute)
 app.use("/game", GameRoute)
+app.use("/storage", UploadRoute)
 app.use((_, res: Response) => response({ res, status: 404, message: "Route Not Found" }));
 
 // listening for dev
