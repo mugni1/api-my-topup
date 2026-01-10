@@ -1,8 +1,8 @@
 import { Request, Response } from "express"
 import { response } from "../utils/response.js"
 import { Meta } from "../types/meta.type.js"
-import { countGamesBySearchService, createGameService, getGamesService } from "../services/game.service.js"
-import { createGameSchema } from "../validations/game.validation.js"
+import { countGamesBySearchService, createGameService, getGamesService, updateGameService } from "../services/game.service.js"
+import { createGameSchema, updateGameSchema } from "../validations/game.validation.js"
 
 export const getGames = async (req: Request, res: Response) => {
     const search = req.query?.search?.toString() || ""
@@ -31,6 +31,21 @@ export const createGame = async (req: Request, res: Response) => {
     try {
         const results = await createGameService(data)
         response({ res, status: 200, message: "Success created game", data: results })
+    } catch {
+        response({ res, status: 500, message: "Internal server error" })
+    }
+}
+
+export const updateGame = async (req: Request, res: Response) => {
+    const { id } = req.params
+    const { data, error, success } = updateGameSchema.safeParse(req.body)
+    if (!success) {
+        const errors = error.issues.map((err) => ({ message: err.message, path: err.path }))
+        return response({ res, status: 400, message: "Invalid input", errors })
+    }
+    try {
+        const results = await updateGameService(id, data)
+        response({ res, status: 200, message: "Success update game", data: results })
     } catch {
         response({ res, status: 500, message: "Internal server error" })
     }
