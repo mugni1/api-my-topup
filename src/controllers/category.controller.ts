@@ -67,7 +67,7 @@ export const updateCategory = async (req: Request, res: Response) => {
     if (data.code) {
       const isExist = await countCategoryByCodeService(data.code);
       if (isExist) {
-        return response({ res, status: 400, message: "Category already exists" });
+        data.code = undefined
       }
     }
 
