@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { response } from "../utils/response.js";
-import { createUpdateItemValidation } from "../validations/item.validation.js";
+import { createItemSchema, createUpdateItemValidation, updateItemSchema } from "../validations/item.validation.js";
 import { countItemByKeywordService, createItemService, deleteItemService, getItemByIdService, getItemsService, updateItemSerevice } from "../services/item.service.js";
 import { countCategoryByIdService } from "../services/category.service.js";
 import { Meta } from "../types/meta.type.js";
@@ -28,25 +28,22 @@ export const getItems = async (req: Request, res: Response) => {
 }
 
 export const createItem = async (req: Request, res: Response) => {
-  const { data, success, error } = createUpdateItemValidation.safeParse(req.body)
+  const { data, success, error } = createItemSchema.safeParse(req.body)
   if (!success) {
     const errors = error.issues.map(issue => ({ path: issue.path.join('.'), message: issue.message }))
     return response({ res, message: "Invalid input", errors, status: 400 })
   }
 
   try {
-    const image = await imageValidateAndUpload(req.files?.image as fileUpload.UploadedFile, res)
-
     const isExistCategory = await countCategoryByIdService(data.category_id)
     if (isExistCategory < 1) {
       return response({ res, message: "Category not found", status: 404 })
     }
 
-    const item = await createItemService(data, image.secure_url, image.public_id)
+    const item = await createItemService(data)
     if (!item) {
       return response({ res, message: "Item creation failed", status: 500 })
     }
-
     response({ res, message: "Item created successfully", status: 201, data: item })
   } catch (error) {
     response({ res, message: "Internal server error", status: 500 })
@@ -55,14 +52,7 @@ export const createItem = async (req: Request, res: Response) => {
 
 export const updateItem = async (req: Request, res: Response) => {
   const id = req.params.id
-
-  // image 
-  let image = req.files?.image as fileUpload.UploadedFile
-  let imageUrl: string | undefined
-  let publicId: string | undefined
-
-  // body
-  const { data, success, error } = createUpdateItemValidation.safeParse(req.body)
+  const { data, success, error } = updateItemSchema.safeParse(req.body)
   if (!success) {
     const errors = error.issues.map(issue => ({ path: issue.path.join('.'), message: issue.message }))
     return response({ res, message: "Invalid input", errors, status: 400 })
@@ -74,23 +64,21 @@ export const updateItem = async (req: Request, res: Response) => {
       return response({ res, message: "Item not found", status: 404 })
     }
 
-    if (image) {
-      const uploadedImage = await imageValidateAndUpload(image, res)
+    if (data.image_url && data.image_id) {
       await cloudinary.uploader.destroy(isExistItem.imageId)
-      imageUrl = uploadedImage.secure_url
-      publicId = uploadedImage.public_id
     }
 
-    const isExistCategory = await countCategoryByIdService(data.category_id)
-    if (isExistCategory < 1) {
-      return response({ res, message: "Category not found", status: 404 })
+    if (data.category_id) {
+      const isExistCategory = await countCategoryByIdService(data.category_id)
+      if (isExistCategory < 1) {
+        return response({ res, message: "Category not found", status: 404 })
+      }
     }
 
-    const updated = await updateItemSerevice(id, data, imageUrl, publicId)
+    const updated = await updateItemSerevice(id, data)
     if (!updated) {
       return response({ res, message: "Item updation failed", status: 500 })
     }
-
     response({ res, message: "Item updated successfully", status: 200, data: updated })
   } catch (error) {
     response({ res, message: "Internal server error", status: 500 })

@@ -1,6 +1,6 @@
 import { prisma } from "../libs/prisma.js";
 import { QueryParams } from "../types/param.type.js";
-import { CreateUpdateItemPayload } from "../validations/item.validation.js";
+import { CreateItemPayload, UpdateItemPayload } from "../validations/item.validation.js";
 
 export const getItemsService = async (query: QueryParams) => {
   return await prisma.item.findMany({
@@ -48,12 +48,12 @@ export const countItemByKeywordService = async (keyword: string) => {
   })
 }
 
-export const createItemService = async (payload: CreateUpdateItemPayload, imageUrl: string, imageId: string) => {
+export const createItemService = async (payload: CreateItemPayload) => {
   return await prisma.item.create({
     data: {
       name: payload.name,
-      imageUrl: imageUrl,
-      imageId: imageId,
+      imageUrl: payload.image_url,
+      imageId: payload.image_id,
       price: payload.price,
       categoryId: payload.category_id,
       merchantName: payload.merchant_name
@@ -61,15 +61,15 @@ export const createItemService = async (payload: CreateUpdateItemPayload, imageU
   })
 }
 
-export const updateItemSerevice = async (id: string, payload: CreateUpdateItemPayload, imageUrl?: string, imageId?: string) => {
+export const updateItemSerevice = async (id: string, payload: UpdateItemPayload) => {
   return await prisma.item.update({
     where: {
       id
     },
     data: {
       name: payload.name,
-      imageUrl: imageUrl,
-      imageId: imageId,
+      imageUrl: payload.image_url,
+      imageId: payload.image_id,
       price: payload.price,
       categoryId: payload.category_id,
       merchantName: payload.merchant_name
