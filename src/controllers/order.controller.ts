@@ -47,22 +47,22 @@ export const createOrder = async (req: Request, res: Response) => {
   }
 
   try {
+    // post to database
     const orderDetail = await createOrderDetailService({ destination: data.destination, trxId, grossAmount, userId })
     if (!orderDetail) {
-      return response({ res, status: 500, message: "Create Order Detail Failed" })
+      return response({ res, status: 500, message: "Create order detail falied" })
     }
-
     data.item_details.map(async (item) => {
       const orderItem = await createOrderItem({ itemId: item.id, orderDetailId: orderDetail.id })
       if (!orderItem) {
-        return response({ res, status: 500, message: "Create Order Item Failed" })
+        return response({ res, status: 500, message: "Create order detail falied" })
       }
     })
 
+    // create snap token and redirect url
     const results = await midtransSnap.createTransaction(payload)
-    response({ res, status: 200, message: "Create Order Success", data: results })
-  } catch (errors) {
-    console.log(errors)
+    response({ res, status: 200, message: "Create Order Success", data: { ...results, id: orderDetail.id, trx_id: orderDetail.trxId } })
+  } catch {
     response({ res, status: 500, message: "Internal server error" })
   }
 }

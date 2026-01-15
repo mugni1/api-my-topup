@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
 import { response } from "../utils/response.js";
-import { createItemSchema, createUpdateItemValidation, updateItemSchema } from "../validations/item.validation.js";
+import { createItemSchema, updateItemSchema } from "../validations/item.validation.js";
 import { countItemByKeywordService, createItemService, deleteItemService, getItemByIdService, getItemsService, updateItemSerevice } from "../services/item.service.js";
 import { countCategoryByIdService } from "../services/category.service.js";
 import { Meta } from "../types/meta.type.js";
-import fileUpload from "express-fileupload";
-import { imageValidateAndUpload } from "../utils/image.js";
 import cloudinary from "../libs/cloudinary.js";
 
 export const getItems = async (req: Request, res: Response) => {
@@ -45,7 +43,7 @@ export const createItem = async (req: Request, res: Response) => {
       return response({ res, message: "Item creation failed", status: 500 })
     }
     response({ res, message: "Item created successfully", status: 201, data: item })
-  } catch (error) {
+  } catch {
     response({ res, message: "Internal server error", status: 500 })
   }
 }
@@ -80,7 +78,7 @@ export const updateItem = async (req: Request, res: Response) => {
       return response({ res, message: "Item updation failed", status: 500 })
     }
     response({ res, message: "Item updated successfully", status: 200, data: updated })
-  } catch (error) {
+  } catch {
     response({ res, message: "Internal server error", status: 500 })
   }
 }
@@ -101,7 +99,7 @@ export const deleteItem = async (req: Request, res: Response) => {
     }
 
     response({ res, message: "Item deleted successfully", status: 200, data: deleted })
-  } catch (error) {
+  } catch {
     response({ res, message: "Internal server error", status: 500 })
   }
 }
